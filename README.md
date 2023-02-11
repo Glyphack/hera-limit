@@ -13,16 +13,23 @@ limiting access to a path based on the rules.
 
 ### Define Rate Limiting Rules
 
-The rules can be defined in YAML format:
+The rules can be defined in YAML format in a similar structure to
+[envoy ratelimit](https://github.com/envoyproxy/ratelimit).
 
-```yaml
-path: auth/* # apply to all requests going to auth/*
-rules:
-  - key: username # rate limit for each user based on username
-    value: <optional> # apply rule to only requests that have this value as the key
-    rate_limit:
-      unit: <second, minute, hour> # the period which the rate limit resets
-      request_per_unit: <number> # number of allowed reuqests
+```json
+{
+  "path": "auth",
+  "descriptors": [
+    {
+      "key": "auth_type",
+      "value": "login",
+      "rate_limit": {
+        "unit": "minute",
+        "requests_per_unit": 5
+      }
+    }
+  ]
+}
 ```
 
 ### Run the service
