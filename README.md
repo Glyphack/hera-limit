@@ -33,6 +33,16 @@ Run the service and pass the rules directory:
 make run ./rules_dir
 ```
 
+### Configuration
+
+The following configuration are supported:
+
+```json
+{
+  "cache_backend": "<local|redis>"
+}
+```
+
 ## License
 
 `hera-limit` is distributed under the terms of the
