@@ -1,13 +1,14 @@
 import json
 import logging
 from pathlib import Path
+from typing import List
 
 from rules_provider.rule import Rule
 
 rules = []
 
 
-def load_rules(path: Path):
+def load_rules(path: Path) -> List[Rule]:
     if rules:
         logging.debug("rules already loaded")
         return rules

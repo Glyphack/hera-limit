@@ -3,8 +3,8 @@ from typing import Dict
 
 
 class Memory:
-    def __init__(self, data):
-        self.data = data
+    def __init__(self):
+        self.data = {}
         self.ttl: Dict[str, datetime] = {}
 
     def get(self, key):

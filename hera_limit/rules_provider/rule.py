@@ -25,3 +25,6 @@ class Rule(BaseModel):
     def check_descriptor_not_empty(cls, v):
         if len(v) == 0:
             return ValueError("Descriptor for rule cannot be empty")
+
+    def matches(self, path: str) -> bool:
+        return self.path == path
