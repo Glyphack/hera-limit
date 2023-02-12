@@ -26,6 +26,7 @@ class LimitStrategy(abc.ABC, metaclass=abc.ABCMeta):
         self.storage_backend = storage_backend
         self.rule_descriptor = rule_descriptor
 
+    @abc.abstractmethod
     def do_limit(
         self,
         request: Request,

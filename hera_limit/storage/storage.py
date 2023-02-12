@@ -10,8 +10,8 @@ class StorageEngines(str, Enum):
 class AbstractStorage(ABC):
     @abstractmethod
     def get(self, key):
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def set(self, key, value, ttl_seconds: int):
-        pass
+        raise NotImplementedError

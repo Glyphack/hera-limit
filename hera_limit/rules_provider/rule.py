@@ -12,7 +12,7 @@ class Unit(str, Enum):
 
 class Descriptor(BaseModel):
     key: str
-    value: Optional[str]
+    value: Optional[str] = None
     unit: Unit
     requests_per_unit: int
 
@@ -25,6 +25,7 @@ class Rule(BaseModel):
     def check_descriptor_not_empty(cls, v):
         if len(v) == 0:
             return ValueError("Descriptor for rule cannot be empty")
+        return v
 
     def matches(self, path: str) -> bool:
         return self.path == path

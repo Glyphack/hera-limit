@@ -1,25 +1,37 @@
-from strategy import LimitStrategy
-
-from hera_limit.limit_strategy.strategy import Request
+from hera_limit.limit_strategy.strategy import LimitStrategy, Request
+from hera_limit.rules_provider.rule import Descriptor, Unit
+from hera_limit.storage.storage import AbstractStorage
 
 
 class TokenBucket(LimitStrategy):
-    def __init__(self, refill_every_x_seconds: int, capacity: int, **kwargs):
-        super(TokenBucket, self).__init__(**kwargs)
-        self.capacity = capacity
-        self.refill_every_x_seconds = refill_every_x_seconds
+    def __init__(
+        self,
+        storage_backend: AbstractStorage,
+        rule_descriptor: Descriptor,
+    ):
+        super(TokenBucket, self).__init__(storage_backend, rule_descriptor)
+        if self.rule_descriptor.unit == Unit.SECOND:
+            refill_period = 1
+        elif self.rule_descriptor.unit == Unit.MINUTE:
+            refill_period = 60
+        elif self.rule_descriptor.unit == Unit.HOUR:
+            refill_period = 3600
+        else:
+            refill_period = 1
+        self.capacity = self.rule_descriptor.requests_per_unit
+        self.refill_every_x_seconds = refill_period
 
     def do_limit(self, request: Request):
         self.request = request
-        counter_key = self.get_counter_keys()
+        counter_key = self._get_counter_key()
         if counter_key is None:
             return False
-        if self.consume(counter_key):
+        if self._consume(counter_key):
             return False
 
         return True
 
-    def get_counter_keys(self):
+    def _get_counter_key(self):
         descriptor = self.rule_descriptor
         path = self.request.path
         key = descriptor.key
@@ -29,7 +41,7 @@ class TokenBucket(LimitStrategy):
         else:
             return path + "_" + key + "_" + value
 
-    def consume(self, counter_key):
+    def _consume(self, counter_key):
         counter = self.storage_backend.get(counter_key)
         if counter is None:
             counter = self.capacity
