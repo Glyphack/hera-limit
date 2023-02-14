@@ -1,7 +1,6 @@
+from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional
-
-from pydantic import BaseModel, validator
 
 
 class Unit(str, Enum):
@@ -10,22 +9,18 @@ class Unit(str, Enum):
     HOUR = "hour"
 
 
-class Descriptor(BaseModel):
+@dataclass
+class Descriptor:
     key: str
-    value: Optional[str] = None
     unit: Unit
     requests_per_unit: int
+    value: Optional[str] = None
 
 
-class Rule(BaseModel):
+@dataclass
+class Rule:
     path: str
     descriptors: List[Descriptor]
 
-    @validator("descriptors")
-    def check_descriptor_not_empty(cls, v):
-        if len(v) == 0:
-            return ValueError("Descriptor for rule cannot be empty")
-        return v
-
-    def matches(self, path: str) -> bool:
+    def match(self, path: str) -> bool:
         return self.path == path

@@ -26,7 +26,6 @@ def test_token_bucket_apply_limit_per_unit(local_storage):
     )
     request = Request(path="dd", data={"user_id": "1"})
     assert token_bucket.do_limit(request) is False
-    # next request should be limited
     assert token_bucket.do_limit(request) is True
 
     local_storage.current_time = mock.MagicMock(
@@ -50,7 +49,6 @@ def test_token_bucket_apply_limit_for_values(local_storage):
 
     assert token_bucket.do_limit(user_1_request) is False
     assert token_bucket.do_limit(user_2_request) is False
-    # next request should be limited
     assert token_bucket.do_limit(user_1_request) is True
     assert token_bucket.do_limit(user_2_request) is True
 
@@ -71,5 +69,4 @@ def test_token_bucket_apply_limit_specific_values(local_storage):
 
     assert token_bucket.do_limit(user_1_req) is False
     assert token_bucket.do_limit(user_2_req) is False
-    # next request should be limited
     assert token_bucket.do_limit(user_1_req) is True

@@ -1,20 +1,21 @@
-from hera_limit.limit_strategy.strategy import LimitStrategy, Request
+from hera_limit.limit_strategy.strategy import AbstractStrategy, Request
 from hera_limit.rules_provider.rule import Descriptor, Unit
 from hera_limit.storage.storage import AbstractStorage
 
 
-class TokenBucket(LimitStrategy):
+class TokenBucket(AbstractStrategy):
     def __init__(
         self,
         storage_backend: AbstractStorage,
         rule_descriptor: Descriptor,
     ):
         super(TokenBucket, self).__init__(storage_backend, rule_descriptor)
-        if self.rule_descriptor.unit == Unit.SECOND:
+        unit = self.rule_descriptor.unit
+        if unit == Unit.SECOND:
             refill_period = 1
-        elif self.rule_descriptor.unit == Unit.MINUTE:
+        elif unit == Unit.MINUTE:
             refill_period = 60
-        elif self.rule_descriptor.unit == Unit.HOUR:
+        elif unit == Unit.HOUR:
             refill_period = 3600
         else:
             refill_period = 1

@@ -3,10 +3,19 @@ from unittest import mock
 
 import pytest
 
-from hera_limit.limit_strategy.strategy import LimitStrategies, Request
-from hera_limit.rules_provider.rule import Descriptor, Rule, Unit
-from hera_limit.service.config import Config
-from hera_limit.service.limiter import RateLimitService
+from hera_limit.limit_strategy.strategy import (
+    Config,
+    Descriptor,
+    LimitStrategies,
+    RateLimitService,
+    Request,
+    Rule,
+    Unit,
+    from,
+    hera_limit.rules_provider.rule,
+    hera_limit.service.limiter,
+    import,
+)
 from hera_limit.storage import memory
 
 
@@ -22,7 +31,9 @@ def config():
     )
 
 
-def test_rate_limit_service(local_storage: memory.Memory, config: Config):
+def test_rate_limit_service_limits_requests(
+    local_storage: memory.Memory, config: Config
+):
     rule_descriptor = Descriptor(
         key="user_id",
         requests_per_unit=1,
@@ -34,7 +45,6 @@ def test_rate_limit_service(local_storage: memory.Memory, config: Config):
     )
     request = Request(path="/limited-path", data={"user_id": "1"})
     assert rate_limit_service.do_limit(request) is False
-    # next request should be limited
     assert rate_limit_service.do_limit(request) is True
 
     local_storage.current_time = mock.MagicMock(

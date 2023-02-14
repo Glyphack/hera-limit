@@ -1,25 +1,32 @@
+from dataclasses import dataclass
 from typing import Dict, List
 
-from hera_limit.limit_strategy.strategy import LimitStrategies, LimitStrategy
+from hera_limit.limit_strategy.strategy import (
+    AbstractStrategy,
+    LimitStrategies,
+)
 from hera_limit.limit_strategy.token_bucket import TokenBucket
 from hera_limit.rules_provider.rule import Rule
-from hera_limit.service.config import Config
-from hera_limit.storage.memory import Memory
-from hera_limit.storage.storage import AbstractStorage, StorageEngines
+from hera_limit.storage.storage import AbstractStorage
+
+
+@dataclass
+class Config:
+    limit_strategy: LimitStrategies
 
 
 class RateLimitService:
     def __init__(
         self, config: Config, storage_engine: AbstractStorage, rules: List[Rule]
     ) -> None:
-        self.limits_to_check: Dict[str, List[LimitStrategy]] = {}
+        self.rule_to_limits: Dict[Rule, List[AbstractStrategy]] = {}
         self.storage_engine = storage_engine
 
         for rule in rules:
-            self.limits_to_check[rule.path] = []
+            self.rule_to_limits[rule] = []
             for descriptor in rule.descriptors:
                 if config.limit_strategy == LimitStrategies.TOKEN_BUCKET:
-                    self.limits_to_check[rule.path].append(
+                    self.rule_to_limits[rule].append(
                         TokenBucket(
                             storage_backend=self.storage_engine,
                             rule_descriptor=descriptor,
@@ -29,7 +36,11 @@ class RateLimitService:
                     raise NotImplementedError
 
     def do_limit(self, request):
-        for limit_to_check in self.limits_to_check.get(request.path, []):
-            if limit_to_check.do_limit(request):
+        applied_rules = []
+        for rule, limits in self.rule_to_limits.items():
+            if rule.match(request.path):
+                applied_rules.append(limits)
+        for rule_limits in applied_rules:
+            if rule_limits.do_limit(request):
                 return True
         return False
