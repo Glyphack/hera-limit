@@ -25,12 +25,8 @@ class FixedWindow(AbstractStrategy):
 
         return False
 
-    def _get_timestamp(self):
-        print(datetime.now().timestamp())
-        return datetime.now().timestamp()
-
     def _get_counter_key(self):
-        current_interval = str(int(self._get_timestamp() / self.interval_len_sec))
+        current_interval = str(int(datetime.now().timestamp() / self.interval_len_sec))
         descriptor = self.rule_descriptor
         path = self.request.path
         key = descriptor.key

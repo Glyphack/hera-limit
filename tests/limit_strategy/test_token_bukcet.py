@@ -5,6 +5,7 @@ import freezegun
 import pytest
 
 from hera_limit.limit_strategy.fixed_window import FixedWindow
+from hera_limit.limit_strategy.sliding_window import SlidingWindow
 from hera_limit.limit_strategy.strategy import Request
 from hera_limit.limit_strategy.token_bucket import TokenBucket
 from hera_limit.rules_provider.rule import Descriptor, Unit
@@ -13,7 +14,9 @@ from hera_limit.storage import memory
 
 @pytest.fixture
 def local_storage():
-    yield memory.Memory()
+    local_storage = memory.Memory()
+    yield local_storage
+    local_storage.data = {}
 
 
 @pytest.mark.parametrize(
@@ -21,6 +24,7 @@ def local_storage():
     [
         TokenBucket,
         FixedWindow,
+        SlidingWindow,
     ],
 )
 def test_apply_limit_per_unit(local_storage, limit_strategy):
@@ -47,6 +51,7 @@ def test_apply_limit_per_unit(local_storage, limit_strategy):
     [
         TokenBucket,
         FixedWindow,
+        SlidingWindow,
     ],
 )
 def test_apply_limit_per_value(local_storage, limit_strategy):
@@ -73,6 +78,7 @@ def test_apply_limit_per_value(local_storage, limit_strategy):
     [
         TokenBucket,
         FixedWindow,
+        SlidingWindow,
     ],
 )
 def test_apply_limit_specific_value(local_storage, limit_strategy):

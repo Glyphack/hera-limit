@@ -19,3 +19,15 @@ class AbstractStorage(ABC):
     @abstractmethod
     def incr(self, key):
         raise NotImplementedError
+
+    @abstractmethod
+    def sorted_set_add(self, key: str, score: float):
+        raise NotImplementedError
+
+    @abstractmethod
+    def sorted_set_remove(self, key: str, start: float, stop: float):
+        raise NotImplementedError
+
+    @abstractmethod
+    def sorted_set_count(self, key: str, start: float, stop: float):
+        raise NotImplementedError

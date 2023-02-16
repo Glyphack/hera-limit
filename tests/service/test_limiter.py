@@ -1,6 +1,7 @@
 import datetime
 from unittest import mock
 
+import freezegun
 import pytest
 
 from hera_limit.limit_strategy.strategy import LimitStrategies, Request
@@ -11,7 +12,9 @@ from hera_limit.storage import memory
 
 @pytest.fixture
 def local_storage():
-    yield memory.Memory()
+    local_storage = memory.Memory()
+    yield local_storage
+    local_storage.data = {}
 
 
 @pytest.fixture
@@ -37,7 +40,6 @@ def test_rate_limit_service_limits_requests(
     assert rate_limit_service.do_limit(request) is False
     assert rate_limit_service.do_limit(request) is True
 
-    local_storage.current_time = mock.MagicMock(
-        return_value=datetime.datetime.now() + datetime.timedelta(seconds=3)
-    )
-    assert rate_limit_service.do_limit(request) is False
+    time_now = datetime.datetime.now() + datetime.timedelta(seconds=3)
+    with freezegun.freeze_time(time_now):
+        assert rate_limit_service.do_limit(request) is False
