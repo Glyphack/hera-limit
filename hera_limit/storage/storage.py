@@ -15,3 +15,7 @@ class AbstractStorage(ABC):
     @abstractmethod
     def set(self, key, value, ttl_seconds: int):
         raise NotImplementedError
+
+    @abstractmethod
+    def incr(self, key):
+        raise NotImplementedError

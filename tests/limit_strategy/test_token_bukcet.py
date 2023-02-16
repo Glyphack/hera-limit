@@ -1,8 +1,10 @@
 import datetime
 from unittest import mock
 
+import freezegun
 import pytest
 
+from hera_limit.limit_strategy.fixed_window import FixedWindow
 from hera_limit.limit_strategy.strategy import Request
 from hera_limit.limit_strategy.token_bucket import TokenBucket
 from hera_limit.rules_provider.rule import Descriptor, Unit
@@ -14,13 +16,20 @@ def local_storage():
     yield memory.Memory()
 
 
-def test_token_bucket_apply_limit_per_unit(local_storage):
+@pytest.mark.parametrize(
+    "limit_strategy",
+    [
+        TokenBucket,
+        FixedWindow,
+    ],
+)
+def test_apply_limit_per_unit(local_storage, limit_strategy):
     rule_descriptor = Descriptor(
         key="user_id",
         requests_per_unit=1,
         unit=Unit.SECOND,
     )
-    token_bucket = TokenBucket(
+    token_bucket = limit_strategy(
         storage_backend=local_storage,
         rule_descriptor=rule_descriptor,
     )
@@ -28,19 +37,25 @@ def test_token_bucket_apply_limit_per_unit(local_storage):
     assert token_bucket.do_limit(request) is False
     assert token_bucket.do_limit(request) is True
 
-    local_storage.current_time = mock.MagicMock(
-        return_value=datetime.datetime.now() + datetime.timedelta(seconds=2)
-    )
-    assert token_bucket.do_limit(request) is False
+    test_now = datetime.datetime.now() + datetime.timedelta(seconds=3)
+    with freezegun.freeze_time(test_now):
+        assert token_bucket.do_limit(request) is False
 
 
-def test_token_bucket_apply_limit_for_values(local_storage):
+@pytest.mark.parametrize(
+    "limit_strategy",
+    [
+        TokenBucket,
+        FixedWindow,
+    ],
+)
+def test_apply_limit_per_value(local_storage, limit_strategy):
     rule_descriptor = Descriptor(
         key="user_id",
         requests_per_unit=1,
         unit=Unit.SECOND,
     )
-    token_bucket = TokenBucket(
+    token_bucket = limit_strategy(
         storage_backend=local_storage,
         rule_descriptor=rule_descriptor,
     )
@@ -53,14 +68,21 @@ def test_token_bucket_apply_limit_for_values(local_storage):
     assert token_bucket.do_limit(user_2_request) is True
 
 
-def test_token_bucket_apply_limit_specific_values(local_storage):
+@pytest.mark.parametrize(
+    "limit_strategy",
+    [
+        TokenBucket,
+        FixedWindow,
+    ],
+)
+def test_apply_limit_specific_value(local_storage, limit_strategy):
     rule_descriptor = Descriptor(
         key="user_id",
         value="1",
         requests_per_unit=1,
         unit=Unit.MINUTE,
     )
-    token_bucket = TokenBucket(
+    token_bucket = limit_strategy(
         storage_backend=local_storage,
         rule_descriptor=rule_descriptor,
     )

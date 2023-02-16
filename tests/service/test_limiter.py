@@ -3,19 +3,9 @@ from unittest import mock
 
 import pytest
 
-from hera_limit.limit_strategy.strategy import (
-    Config,
-    Descriptor,
-    LimitStrategies,
-    RateLimitService,
-    Request,
-    Rule,
-    Unit,
-    from,
-    hera_limit.rules_provider.rule,
-    hera_limit.service.limiter,
-    import,
-)
+from hera_limit.limit_strategy.strategy import LimitStrategies, Request
+from hera_limit.rules_provider.rule import Descriptor, Rule, Unit
+from hera_limit.service.limiter import Config, RateLimitService
 from hera_limit.storage import memory
 
 

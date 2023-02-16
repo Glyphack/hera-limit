@@ -8,6 +8,16 @@ class Unit(str, Enum):
     MINUTE = "minute"
     HOUR = "hour"
 
+    def to_seconds(self) -> int:
+        if self == Unit.SECOND:
+            return 1
+        elif self == Unit.MINUTE:
+            return 60
+        elif self == Unit.HOUR:
+            return 3600
+        else:
+            raise ValueError(f"Unknown unit: {self}")
+
 
 @dataclass
 class Descriptor:
