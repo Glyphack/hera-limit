@@ -5,13 +5,13 @@ from hera_limit.rules_provider.rule import Descriptor
 from hera_limit.storage.storage import AbstractStorage
 
 
-class SlidingWindow(AbstractStrategy):
+class SlidingWindowLog(AbstractStrategy):
     def __init__(
         self,
         storage_backend: AbstractStorage,
         rule_descriptor: Descriptor,
     ):
-        super(SlidingWindow, self).__init__(storage_backend, rule_descriptor)
+        super(SlidingWindowLog, self).__init__(storage_backend, rule_descriptor)
         self.interval_len_sec = self.rule_descriptor.unit.to_seconds()
         self.interval_max = self.rule_descriptor.requests_per_unit
 

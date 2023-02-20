@@ -32,8 +32,31 @@ class RateLimitService:
                             rule_descriptor=descriptor,
                         )
                     )
+                elif config.limit_strategy == LimitStrategies.FIXED_WINDOW:
+                    limits.append(
+                        TokenBucket(
+                            storage_backend=self.storage_engine,
+                            rule_descriptor=descriptor,
+                        )
+                    )
+                elif config.limit_strategy == LimitStrategies.SLIDING_WINDOW_LOG:
+                    limits.append(
+                        TokenBucket(
+                            storage_backend=self.storage_engine,
+                            rule_descriptor=descriptor,
+                        )
+                    )
+                elif config.limit_strategy == LimitStrategies.SLIDING_WINDOW_COUNTER:
+                    limits.append(
+                        TokenBucket(
+                            storage_backend=self.storage_engine,
+                            rule_descriptor=descriptor,
+                        )
+                    )
                 else:
-                    raise NotImplementedError
+                    raise ValueError(
+                        f"Limit strategy {config.limit_strategy} not supported"
+                    )
 
             self.rule_to_limits.append((rule, limits))
 

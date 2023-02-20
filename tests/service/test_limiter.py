@@ -1,5 +1,4 @@
 import datetime
-from unittest import mock
 
 import freezegun
 import pytest
@@ -24,9 +23,19 @@ def config():
     )
 
 
+@pytest.mark.parametrize(
+    "limit_strategy",
+    [
+        LimitStrategies.TOKEN_BUCKET,
+        LimitStrategies.FIXED_WINDOW,
+        LimitStrategies.SLIDING_WINDOW_LOG,
+        LimitStrategies.SLIDING_WINDOW_COUNTER,
+    ],
+)
 def test_rate_limit_service_limits_requests(
-    local_storage: memory.Memory, config: Config
+    local_storage: memory.Memory, config: Config, limit_strategy: LimitStrategies
 ):
+    config.limit_strategy = limit_strategy
     rule_descriptor = Descriptor(
         key="user_id",
         requests_per_unit=1,

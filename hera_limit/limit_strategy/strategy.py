@@ -8,6 +8,9 @@ from hera_limit.storage.storage import AbstractStorage
 
 class LimitStrategies(str, Enum):
     TOKEN_BUCKET = "token_bucket"
+    FIXED_WINDOW = "fixed_window"
+    SLIDING_WINDOW_LOG = "sliding_window_log"
+    SLIDING_WINDOW_COUNTER = "sliding_window_counter"
 
 
 @dataclass

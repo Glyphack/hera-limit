@@ -36,12 +36,16 @@ Source = "https://github.com/glyphack/hera-limit"
 [tool.hatch.version]
 path = "hera_limit/__about__.py"
 
+[tool.pytest.ini_options]
+pythonpath = "hera_limit"
+
 [tool.hatch.envs.default]
 dependencies = [
   "pytest",
   "pytest-cov",
 ]
 [tool.hatch.envs.default.scripts]
+test = "python -m pytest"
 cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=hera_limit --cov=tests {args}"
 no-cov = "cov --no-cov {args}"
 
