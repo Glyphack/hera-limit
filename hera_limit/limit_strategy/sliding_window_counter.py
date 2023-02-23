@@ -1,5 +1,5 @@
+import math
 from datetime import datetime
-from os import preadv
 
 from hera_limit.limit_strategy.strategy import AbstractStrategy, Request
 from hera_limit.rules_provider.rule import Descriptor
@@ -17,8 +17,8 @@ class SlidingWindowCount(AbstractStrategy):
         self.interval_max = self.rule_descriptor.requests_per_unit
 
     def do_limit(self, request: Request):
-        current_interval = str(datetime.now().timestamp() // self.interval_len_sec)
-        prev_interval = str(datetime.now().timestamp() // self.interval_len_sec - 1)
+        current_interval = str(int(datetime.now().timestamp() / self.interval_len_sec))
+        prev_interval = str(int(datetime.now().timestamp() / self.interval_len_sec) - 1)
         key = self.rule_descriptor.key
         path = request.path
         value = request.data[key]
@@ -26,20 +26,30 @@ class SlidingWindowCount(AbstractStrategy):
         previous_interval_key = self._get_counter_key(prev_interval, path, key, value)
         current_interval_key = self._get_counter_key(current_interval, path, key, value)
 
-        previous_interval_counter = self.storage_backend.get(previous_interval_key) or 0
+        if previous_interval_key is None or current_interval_key is None:
+            return False
+
+        self.storage_backend.incr(current_interval_key)
+
         current_interval_counter = self.storage_backend.get(current_interval_key) or 0
+        previous_interval_counter = self.storage_backend.get(previous_interval_key) or 0
 
-        percent_of_current_interval_remaining = (
-            self.interval_len_sec - datetime.now().timestamp() % self.interval_len_sec
-        ) / self.interval_len_sec
-        percent_of_current_interval_passed = 1 - percent_of_current_interval_remaining
-
-        total_requests = (
-            previous_interval_counter
-            + current_interval_counter * percent_of_current_interval_passed
+        percent_of_previous_interval_overlap_current_window = (
+            1
+            - (
+                self.interval_len_sec
+                - datetime.now().timestamp() % self.interval_len_sec
+            )
+            / self.interval_len_sec
         )
 
-        if total_requests >= self.interval_max:
+        total_requests = math.ceil(
+            previous_interval_counter
+            * percent_of_previous_interval_overlap_current_window
+            + current_interval_counter
+        )
+
+        if total_requests > self.interval_max:
             return True
 
         return False

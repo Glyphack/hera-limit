@@ -17,15 +17,15 @@ class SlidingWindowLog(AbstractStrategy):
 
     def do_limit(self, request: Request):
         self.request = request
-        window_key = self._get_window_key()
-        if window_key is None:
+        request_logs_key = self._get_request_logs_key()
+        if request_logs_key is None:
             return False
-        if self._window_max_reached(window_key):
+        if self._window_max_reached(request_logs_key):
             return True
 
         return False
 
-    def _get_window_key(self):
+    def _get_request_logs_key(self):
         descriptor = self.rule_descriptor
         path = self.request.path
         key = descriptor.key

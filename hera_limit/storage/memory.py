@@ -19,7 +19,8 @@ class Memory(AbstractStorage):
 
     def set(self, key: str, value: str, ttl_seconds: int):
         self.data[key] = value
-        self.ttl[key] = datetime.now() + timedelta(seconds=ttl_seconds)
+        if ttl_seconds:
+            self.ttl[key] = datetime.now() + timedelta(seconds=ttl_seconds)
 
     def incr(self, key: str):
         if key in self.data:

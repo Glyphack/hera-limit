@@ -4,6 +4,7 @@ import freezegun
 import pytest
 
 from hera_limit.limit_strategy.fixed_window import FixedWindow
+from hera_limit.limit_strategy.sliding_window_counter import SlidingWindowCount
 from hera_limit.limit_strategy.sliding_window_log import SlidingWindowLog
 from hera_limit.limit_strategy.strategy import Request
 from hera_limit.limit_strategy.token_bucket import TokenBucket
@@ -24,6 +25,7 @@ def local_storage():
         TokenBucket,
         FixedWindow,
         SlidingWindowLog,
+        SlidingWindowCount,
     ],
 )
 def test_apply_limit_per_unit(local_storage, limit_strategy):
@@ -51,6 +53,7 @@ def test_apply_limit_per_unit(local_storage, limit_strategy):
         TokenBucket,
         FixedWindow,
         SlidingWindowLog,
+        SlidingWindowCount,
     ],
 )
 def test_apply_limit_per_value(local_storage, limit_strategy):
@@ -78,6 +81,7 @@ def test_apply_limit_per_value(local_storage, limit_strategy):
         TokenBucket,
         FixedWindow,
         SlidingWindowLog,
+        SlidingWindowCount,
     ],
 )
 def test_apply_limit_specific_value(local_storage, limit_strategy):
@@ -97,3 +101,36 @@ def test_apply_limit_specific_value(local_storage, limit_strategy):
     assert token_bucket.do_limit(user_1_req) is False
     assert token_bucket.do_limit(user_2_req) is False
     assert token_bucket.do_limit(user_1_req) is True
+
+
+@pytest.mark.parametrize(
+    "limit_strategy",
+    [
+        SlidingWindowLog,
+        SlidingWindowCount,
+    ],
+)
+def test_sliding_window_does_not_allow_requests_in_unit_edges(
+    local_storage, limit_strategy
+):
+    rule_descriptor = Descriptor(
+        key="user_id",
+        requests_per_unit=2,
+        unit=Unit.MINUTE,
+    )
+    sliding_window = limit_strategy(
+        storage_backend=local_storage,
+        rule_descriptor=rule_descriptor,
+    )
+    user_1_req = Request(path="dd", data={"user_id": "1"})
+
+    current_time = datetime.datetime.now().replace(
+        hour=0, minute=0, second=50, microsecond=0
+    )
+    with freezegun.freeze_time(current_time):
+        assert sliding_window.do_limit(user_1_req) is False
+
+    test_now = current_time + datetime.timedelta(seconds=15)
+    with freezegun.freeze_time(test_now):
+        assert sliding_window.do_limit(user_1_req) is False
+        assert sliding_window.do_limit(user_1_req) is True
